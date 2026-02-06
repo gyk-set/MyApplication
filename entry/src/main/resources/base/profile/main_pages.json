@@ -1,0 +1,20 @@
+{
+  "src": [
+    "pages/Index",
+    "pages/RecordPage",
+    "pages/MainPage",
+    "pages/LoginPage",
+    "pages/DetailPage",
+    "pages/StatisticPage",
+    "pages/HomePage",
+    "pages/MinePage",
+    "pages/SettingsPage",
+    "pages/AboutPage",
+    "pages/AccountSecurityPage",
+    "pages/PrivacySettingPage",
+    "pages/UserAgreementPage",
+    "pages/PrivacyPolicyPage",
+    "pages/ForgotPage",
+    "pages/EditPage"
+  ]
+}

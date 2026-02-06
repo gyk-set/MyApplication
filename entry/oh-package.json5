@@ -1,0 +1,17 @@
+{
+  "name": "entry",
+  "version": "1.0.0",
+  "description": "Please describe the basic information.",
+  "main": "",
+  "author": "",
+  "license": "",
+
+  // oh-package.json5 示例
+  "app": {
+    "bundleName": "com.example.app",
+    "versionCode": 1000000,
+    "versionName": "1.0.0",
+    "compatibleSdkVersion": "6.0.0"
+    // 改为设备的API版本（6.0.0）
+  }
+}

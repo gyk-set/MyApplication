@@ -1,0 +1,42 @@
+{
+  "forms": [
+    {
+      "name": "ExpenseCard",
+      "description": "$string:widget1_desc",
+      "type": "JS",
+      "colorMode": "auto",
+      "isDefault": true,
+      "updateEnabled": true,
+      "scheduledUpdateTime": "10:30",
+      "updateDuration": 1,
+      "defaultDimensions": {
+        "width": "2x4",
+        "height": "4x4"
+      },
+      "supportDimensions": [
+        {
+          "width": "2x2",
+          "height": "2x2"
+        },
+        {
+          "width": "2x4",
+          "height": "4x4"
+        },
+        {
+          "width": "4x4",
+          "height": "4x4"
+        }
+      ],
+      "formConfigAbility": "EntryAbility",
+      "formVisibleNotify": true,
+      "metaData": {
+        "customizeData": [
+          {
+            "name": "widgetType",
+            "value": "expenseTracker"
+          }
+        ]
+      }
+    }
+  ]
+}
