@@ -5,8 +5,6 @@ import { DateUtils } from '../utils/DateUtils';
 import { TabItem } from '../models/Record'
 import { CommonTabBar, DefaultTabItems } from '../components/CommonTabBar';
 
-
-
 @Entry
 @Component
 struct MainPage {
@@ -54,6 +52,14 @@ struct MainPage {
     this.expense = this.recordStore.getTodayExpense();
     this.income = this.recordStore.getTodayIncome();
     this.yesterdayChange = this.recordStore.getExpenseChangePercent();
+  }
+
+  // 新增：跳转按钮的点击事件处理函数
+  private navigateToOtherPage() {
+    // 这里替换为你要跳转的页面路径（例如：记账详情页/统计页/设置页）
+    router.pushUrl({
+      url: 'pages/AiChatPage' // 请根据实际页面路径修改
+    });
   }
 
   build() {
@@ -157,6 +163,20 @@ struct MainPage {
           }
           .width('100%')
           .padding({ top: 8, bottom: 24 });
+
+          // ========== 新增：跳转按钮 ==========
+          Button('查看详细账单')
+            .fontSize(16)
+            .fontWeight(FontWeight.Medium)
+            .fontColor('#FFFFFF')
+            .backgroundColor('#FF5722') // 和Tab选中色保持一致，视觉统一
+            .borderRadius(12)
+            .padding({ top: 12, bottom: 12 })
+            .width('80%')
+            .margin({ bottom: 20 })
+            .onClick(() => {
+              this.navigateToOtherPage();
+            });
         }
         .width('100%')
       }
@@ -178,4 +198,3 @@ struct MainPage {
     .backgroundColor('#F5F5F5');
   }
 }
-

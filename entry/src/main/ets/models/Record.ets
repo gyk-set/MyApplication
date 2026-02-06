@@ -12,7 +12,8 @@ export interface Record {
 
 export interface FeatureItems {
   title: string;
-  desc: string
+  desc: string;
+  pageUrl: string;
 }
 
 export interface TabItem {

@@ -10,9 +10,16 @@ export struct MinePage {
   @State currentIndex: number = 2; // 我的页高亮
   private tabItems: Array<TabItem> = DefaultTabItems;
   private featureItems: Array<FeatureItems> = [
-    { title: '数据备份', desc: '本地数据备份与恢复' },
-    { title: '导出记录', desc: '导出CSV或图片' },
-    { title: '关于轻记', desc: '版本信息与更新' }
+    {
+      title: '数据备份',
+      desc: '本地数据备份与恢复',
+      pageUrl: 'pages/DataBackupPage' // 新增：页面路由
+    },
+    {
+      title: '导出记录',
+      desc: '导出CSV或图片',
+      pageUrl: 'pages/ExportRecordsPage' // 新增：页面路由
+    }
   ];
 
   build() {
@@ -68,7 +75,10 @@ export struct MinePage {
                 top: 6,
                 bottom: 6
               })
-              .onClick(() => promptAction.showToast({ message: '暂未实现' }));
+              .onClick(() => {
+                // 跳转到编辑资料页面
+                router.push({ url: 'pages/EditProfilePage' });
+              });
           }
           .width('100%')
           .padding(20)
@@ -104,7 +114,13 @@ export struct MinePage {
                   .fontColor('#C0C0C0');
               }
               .width('100%')
-              .padding({ top: 12, bottom: 12 });
+              .padding({ top: 12, bottom: 12 })
+              .onClick(() => {
+                // 点击行时跳转到对应页面
+                if (item.pageUrl) {
+                  router.push({ url: item.pageUrl });
+                }
+              });
 
               Divider().color('#F2F2F7');
             });

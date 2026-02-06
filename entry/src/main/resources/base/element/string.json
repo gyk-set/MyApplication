@@ -1,6 +1,10 @@
 {
   "string": [
     {
+      "name": "internet_permission_reason",
+      "value": "用于应用内联网请求功能，实现AI服务的网络通信"
+    },
+    {
       "name": "module_desc",
       "value": "module description"
     },
@@ -115,6 +119,38 @@
     {
       "name": "widget2_display_name",
       "value": "widget2"
+    },
+    {
+      "name": "card_list_title",
+      "value": "Title"
+    },
+    {
+      "name": "card_list_content",
+      "value": "Introduction"
+    },
+    {
+      "name": "widget_search",
+      "value": "discover more"
+    },
+    {
+      "name": "widget_explored",
+      "value": "explored"
+    },
+    {
+      "name": "widget_study",
+      "value": "study"
+    },
+    {
+      "name": "widget_activity",
+      "value": "activity"
+    },
+    {
+      "name": "widget_mine",
+      "value": "mine"
+    },
+    {
+      "name": "widget_more",
+      "value": "more Info"
     }
   ]
 }
