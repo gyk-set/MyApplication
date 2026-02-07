@@ -64,10 +64,15 @@ struct MainPage {
 
   build() {
     Column() {
-      // ========== 主内容区域：今日消费卡片 + 欢迎语 ==========
+      // ========== 主内容区域 ==========
       Scroll() {
-        Column({ space: 16 }) {
-          // 今日消费卡片（简版）
+        Column({ space: 0 }) {
+          // 顶部占位空间（10%）
+          Column()
+            .height('20%')
+            .width('100%')
+
+          // 今日消费卡片
           Column() {
             Row() {
               Text('今日消费')
@@ -131,7 +136,7 @@ struct MainPage {
                   .fontColor('#666666');
                 Text('¥ ' + this.income.toFixed(2))
                   .fontSize(18)
-                  .fontWeight(FontWeight.Bold)
+                  .fontWeight(FontWeight.Medium)
                   .fontColor('#34C759');
               }
               .flexGrow(1)
@@ -149,12 +154,18 @@ struct MainPage {
             offsetX: 0,
             offsetY: 2
           })
-          .margin({ top: 20, left: '5%', right: '5%' });
+          .margin({ left: '5%', right: '5%' }) // 使用margin代替alignSelf实现居中
+
+          // // 中间占位空间（让欢迎语在屏幕中间）
+          // Column()
+          //   .layoutWeight(1) // 占据剩余空间
+          //   .width('100%')
+          //   .justifyContent(FlexAlign.Center) // 垂直居中
 
           // 欢迎语
           Column() {
             Text('欢迎使用轻记，您的每一次记录都将是美好的')
-              .fontSize(16)
+              .fontSize(14)
               .fontWeight(FontWeight.Medium)
               .fontColor('#333333')
               .textAlign(TextAlign.Center)
@@ -162,23 +173,93 @@ struct MainPage {
               .padding(16);
           }
           .width('100%')
-          .padding({ top: 8, bottom: 24 });
 
-          // ========== 新增：跳转按钮 ==========
-          Button('查看详细账单')
-            .fontSize(16)
-            .fontWeight(FontWeight.Medium)
-            .fontColor('#FFFFFF')
-            .backgroundColor('#FF5722') // 和Tab选中色保持一致，视觉统一
+          // 中间到AI卡片之间的占位空间
+          Column()
+            .layoutWeight(1) // 再占据一部分空间
+            .width('100%')
+            .justifyContent(FlexAlign.End) // 对齐到底部
+
+          // AI助手卡片（距离底部10%）
+          Column({ space: 12 }) {
+            // 上部分：AI助手卡片
+            Row({ space: 16 }) {
+              // 左侧图标
+              Column()
+                .width(50)
+                .height(50)
+                .backgroundImage($r('app.media.logo1'))
+                .backgroundImageSize(ImageSize.Cover)
+                .borderRadius(35) // 圆形
+                .border({ width: 2, color: '#FFFFFF' })
+                .shadow({
+                  radius: 4,
+                  color: '#00000010',
+                  offsetX: 0,
+                  offsetY: 2
+                })
+
+              // 中间文字
+              Column({ space: 4 }) {
+                Text('轻记AI助手')
+                  .fontSize(14)
+                  .fontWeight(FontWeight.Medium)
+                  .fontColor('#333333')
+
+                Text('智能问答，快速解决记账问题')
+                  .fontSize(10)
+                  .fontColor('#666666')
+              }
+              .layoutWeight(1)
+
+              // 右侧体验按钮
+              Button('体验')
+                .fontSize(14)
+                .fontColor('#FFFFFF')
+                .fontWeight(FontWeight.Medium)
+                .backgroundColor('#FF5722')
+                .borderRadius(16)
+                .width(60)
+                .height(32)
+            }
+            .padding(16)
+            .backgroundColor('#FFFFFF')
             .borderRadius(12)
-            .padding({ top: 12, bottom: 12 })
-            .width('80%')
-            .margin({ bottom: 20 })
+            .border({ width: 1, color: '#F0F0F0' })
+            .shadow({
+              radius: 6,
+              color: '#00000008',
+              offsetX: 0,
+              offsetY: 2
+            })
+
             .onClick(() => {
               this.navigateToOtherPage();
-            });
+            })
+            // 下部分：提示信息
+            Row() {
+              Text('💡 小提示')
+                .fontSize(14)
+                .fontColor('#FF5722')
+                .fontWeight(FontWeight.Medium)
+
+              Text('试试AI助手，让记账更智能')
+                .fontSize(14)
+                .fontColor('#666666')
+                .margin({ left: 8 })
+            }
+            .margin({ left: '5%', right: '5%' })
+          }
+          .width('90%')
+          .margin({ left: '5%', right: '5%', bottom: '10%' }) // 使用margin实现居中
+
+          // 底部占位空间（为TabBar留出空间）
+          Column()
+            .height(56) // TabBar高度
+            .width('100%')
         }
         .width('100%')
+        .height('100%')
       }
       .width('100%')
       .height('95%')
@@ -187,8 +268,8 @@ struct MainPage {
 
       CommonTabBar({
         tabItems: this.tabItems,
-        activeColor: '#FF5722', // 自定义选中态颜色
-        inactiveColor: '#999999' // 自定义未选中态颜色
+        activeColor: '#FF5722',
+        inactiveColor: '#999999'
       }).width('100%')
         .height(56)
         .backgroundColor('#FFFFFF');

@@ -50,7 +50,7 @@ struct Index {
           .backgroundColor('#007DFF')
           .fontColor('#FFFFFF')
           .onClick(() => {
-            // 跳转到权限协议引导页
+            // 跳转到登录页面
             router.replaceUrl({
               url: 'pages/LoginPage'
             });

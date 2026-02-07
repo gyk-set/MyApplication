@@ -17,6 +17,10 @@
       "value": "label"
     },
     {
+      "name": "permission_location_media_reason",
+      "value":"需要访问媒体库以保存图片到相册"
+    },
+    {
       "name": "permission_read_media_reason",
       "value": "用于读取媒体文件，保存记账相关图片"
     },
