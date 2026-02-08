@@ -1,25 +1,19 @@
 import router from '@ohos.router';
 import promptAction from '@ohos.promptAction';
+import { BusinessError } from '@ohos.base';
 import { RecordStore } from '../data/RecordStore';
 import { DateUtils } from '../utils/DateUtils';
 import { Record, Category, TabItem } from '../models/Record';
 import { CommonNavBar } from '../components/CommonNavBar';
 import { CommonTabBar, DefaultTabItems } from '../components/CommonTabBar';
-import fs from '@ohos.file.fs';
-import common from '@ohos.app.ability.common';
+import pasteboard from '@ohos.pasteboard'; // 导入剪贴板模块
+
 
 
 interface RecordParams {
   recordId: string | number;
   refresh?: boolean,
   timestamp?: number
-}
-
-
-interface GeneratedObjectLiteralInterface_1 {
-  action: string;
-  type: string;
-  uri: string;
 }
 
 @Entry
@@ -39,9 +33,11 @@ struct DataBackupPage {
   @State refreshFlag: boolean = false;
   @State refreshTimestamp: number = 0;
 
-  @State isGeneratingImage: boolean = false;
-  @State backupFilePath: string = '';
-  @State showBackupSuccess: boolean = false;
+  @State isGeneratingBackup: boolean = false;
+  @State showBackupResult: boolean = false;
+  @State backupContent: string = ''; // 存储生成的备份文本
+
+
 
   async aboutToAppear(): Promise<void> {
     this.recordStore = RecordStore.getInstance();
@@ -79,14 +75,6 @@ struct DataBackupPage {
       this.currentRecord = undefined;
       this.categoryInfo = undefined;
     }
-  }
-
-  // 加载所有记录
-  loadAllRecords(): void {
-    if (!this.recordStore) {
-      return;
-    }
-    this.allRecords = this.recordStore.getAllRecords();
   }
 
   // 加载最近记录
@@ -174,154 +162,72 @@ struct DataBackupPage {
     return prefix + amount.toFixed(2);
   }
 
-  // 生成并保存备份 - 修改为方案一
-  private async saveAndShareBackup(): Promise<void> {
-    if (this.isGeneratingImage) {
+  // ====================== 核心修改：确认弹窗 ======================
+  private async showConfirmBackupDialog() {
+    if (this.isGeneratingBackup) return;
+
+    try {
+      // 系统确认弹窗
+      let res = await promptAction.showDialog({
+        title: "确认生成备份",
+        message: "确定要生成当前数据的备份文本吗？\n生成后可直接复制使用",
+        buttons: [
+          { text: "取消", color: "#666666" },
+          { text: "确认", color: "#007AFF" },
+        ]
+      });
+
+      // 点击确认，生成备份文本并显示
+      if (res.index === 1) {
+        await this.generateAndShowBackup();
+      } else {
+        promptAction.showToast({ message: "已取消备份", duration: 1500 });
+      }
+    } catch (err) {
+      console.error("弹窗异常", err);
+    }
+  }
+  // ===========================================================================
+
+  // 生成备份并显示（不保存文件，直接展示文本）
+  private async generateAndShowBackup(): Promise<void> {
+    if (this.isGeneratingBackup) {
       return;
     }
 
-    this.isGeneratingImage = true;
-    this.showBackupSuccess = false;
+    this.isGeneratingBackup = true;
 
     try {
-      promptAction.showToast({ message: '正在生成备份...', duration: 1000 });
+      promptAction.showToast({ message: '正在生成备份...', duration: 800 });
 
       // 生成备份内容
-      const backupContent = this.generateBackupContent();
+      this.backupContent = this.generateBackupContent();
+      this.showBackupResult = true;
 
-      // 保存到应用私有目录（不需要额外权限）
-      const context = getContext() as common.UIAbilityContext;
-      const filesDir = context.filesDir;
-      const fileName = `财务记录备份_${new Date().toLocaleDateString().replace(/\//g, '-')}.txt`;
-      const filePath = `${filesDir}/${fileName}`;
-
-      // 写入文件
-      const file = await fs.open(filePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE);
-      await fs.write(file.fd, backupContent);
-      await fs.close(file.fd);
-
-      console.log('文件已保存到应用目录:', filePath);
-      this.backupFilePath = filePath;
-      this.showBackupSuccess = true;
-
-      // 直接调用系统分享
-      await this.shareFileDirectly(filePath, backupContent);
+      promptAction.showToast({ message: '备份生成成功', duration: 1500 });
 
     } catch (error) {
-      console.error('备份失败:', error);
-      promptAction.showToast({ message: '备份失败: ' + error.message, duration: 3000 });
+      console.error('备份生成失败:', error);
+      promptAction.showToast({ message: '生成失败，请重试', duration: 2000 });
     } finally {
-      this.isGeneratingImage = false;
+      this.isGeneratingBackup = false;
     }
   }
 
-  shareFileDirectly(filePath: string, backupContent: string) {
-    throw new Error('Method not implemented.');
-  }
-
-  // 最简单的分享方法
-  private async shareFile(filePath: string): Promise<void> {
+  // 复制文本到剪贴板
+  private async copyToClipboard(): Promise<void> {
     try {
-      const context = getContext() as common.UIAbilityContext;
-      const fileName = filePath.split('/').pop() || '财务记录备份.txt';
+      // 创建剪贴板数据 [^11^]
+      const pasteboardData = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, this.backupContent);
+      const systemPasteboard = pasteboard.getSystemPasteboard();
 
-      // 方法1：使用uri方式
-      const want1: GeneratedObjectLiteralInterface_1 = {
-        action: 'ohos.want.action.sendFile',
-        type: 'text/plain',
-        uri: `file://${filePath}`
-      };
+      // 设置数据到系统剪贴板，允许跨应用粘贴 [^21^]
+      await systemPasteboard.setData(pasteboardData);
 
-      // 尝试第一种方式，失败时尝试第二种
-        await context.startAbility(want1);
-
-
-
-      console.log('分享文件成功');
+      promptAction.showToast({ message: '已复制到剪贴板', duration: 2000 });
     } catch (error) {
-      console.error('分享文件失败:', error);
-      // 错误处理...
-    }
-  }
-
-  // 显示备份内容让用户手动复制
-  private async showBackupContent(content: string): Promise<void> {
-    try {
-      // 计算显示的行数（前30行）
-      const lines = content.split('\n');
-      const previewLines = lines.slice(0, Math.min(30, lines.length));
-      const previewContent = previewLines.join('\n');
-
-      const result = await promptAction.showDialog({
-        title: '📋 备份内容',
-        message: `备份已生成！\n\n由于系统限制，文件已保存到应用私有目录。\n\n以下是备份内容（前${previewLines.length}行）：\n\n${previewContent}\n\n... ${lines.length - previewLines.length} 行更多内容\n\n您可以选择：`,
-        buttons: [
-          {
-            text: '查看完整内容',
-            color: '#666666'
-          },
-          {
-            text: '复制文本内容',
-            color: '#007AFF'
-          }
-        ]
-      });
-
-      if (result.index === 0) {
-        // 显示完整内容
-        await this.showFullContent(content);
-      } else if (result.index === 1) {
-        // 提示用户手动复制
-        await this.showCopyInstructions(content);
-      }
-
-    } catch (error) {
-      console.error('显示内容失败:', error);
-    }
-  }
-
-  // 显示完整内容
-  private async showFullContent(content: string): Promise<void> {
-    try {
-      promptAction.showDialog({
-        title: '📄 完整备份内容',
-        message: content,
-        buttons: [{
-          text: '关闭',
-          color: '#007AFF'
-        }]
-      });
-    } catch (error) {
-      console.error('显示完整内容失败:', error);
-    }
-  }
-
-  // 显示复制说明
-  private async showCopyInstructions(content: string): Promise<void> {
-    try {
-      // 显示操作指引
-      promptAction.showDialog({
-        title: '📋 复制说明',
-        message: '请按以下步骤操作：\n\n1. 返回上一个对话框\n2. 长按备份内容文本\n3. 选择"全选"\n4. 选择"复制"\n5. 粘贴到备忘录、微信或其他应用\n\n或者您可以选择重新生成并尝试分享。',
-        buttons: [
-          {
-            text: '返回查看内容',
-            color: '#666666'
-          },
-          {
-            text: '重新生成备份',
-            color: '#007AFF'
-          }
-        ]
-      }).then(result => {
-        if (result.index === 0) {
-          this.showFullContent(content);
-        } else if (result.index === 1) {
-          this.saveAndShareBackup();
-        }
-      });
-    } catch (error) {
-      promptAction.showToast({ message: '操作失败', duration: 2000 });
+      console.error('复制失败:', error);
+      promptAction.showToast({ message: '复制失败，请手动复制', duration: 2000 });
     }
   }
 
@@ -333,7 +239,7 @@ struct DataBackupPage {
     content += '===================\n\n';
 
     if (this.showRecentRecords) {
-      content += '最近记录:\n';
+      content += '【最近记录】\n';
       content += '-----------\n';
 
       if (this.recentRecords.length > 0) {
@@ -348,7 +254,7 @@ struct DataBackupPage {
         content += '暂无记录\n\n';
       }
     } else if (this.currentRecord) {
-      content += '详细记录:\n';
+      content += '【详细记录】\n';
       content += '-----------\n';
       content += `描述: ${this.currentRecord.description || '无描述'}\n`;
       content += `金额: ${this.formatAmount(this.currentRecord.amount, this.currentRecord.type)}\n`;
@@ -358,7 +264,7 @@ struct DataBackupPage {
       content += `记录ID: ${this.currentRecord.id}\n\n`;
 
       // 添加统计信息
-      content += '月度统计:\n';
+      content += '【月度统计】\n';
       content += '-----------\n';
       content += `本月餐饮消费: ¥${this.foodExpenseTotal.toFixed(2)}\n`;
       content += `餐饮预算剩余: ¥${(this.budgetTotal - this.foodExpenseTotal).toFixed(2)}\n`;
@@ -386,7 +292,7 @@ struct DataBackupPage {
 
       // 主要内容区域
       Scroll() {
-        Column({ space: 24 }) {
+        Column({ space: 20 }) {
           if (this.showRecentRecords) {
             // 显示最近记录列表
             if (this.recentRecords.length > 0) {
@@ -590,74 +496,77 @@ struct DataBackupPage {
                 .alignItems(HorizontalAlign.Center)
               }
             }
-          } else {
-            Column() {
-              Image($r('app.media.background'))
-                .width(120)
-                .height(120)
-                .margin({ bottom: 20 })
-              Text('无记录数据')
-                .fontSize(18)
-                .fontColor('#8E8E93')
-                .margin({ bottom: 20 })
-            }
-            .width('100%')
-            .height(400)
-            .justifyContent(FlexAlign.Center)
-            .alignItems(HorizontalAlign.Center)
           }
 
-          // 备份说明
-          Column({ space: 8 }) {
-            Text('备份说明')
-              .fontSize(18)
-              .fontWeight(FontWeight.Bold)
-              .fontColor('#000000')
-              .margin({ bottom: 12 })
+          // ====================== 核心修改：备份结果显示区域 ======================
+          if (this.showBackupResult && this.backupContent) {
+            Column({ space: 12 }) {
+              Row() {
+                Text('📋 备份内容')
+                  .fontSize(18)
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor('#000000')
 
-            Text('点击下方按钮将生成备份文件')
-              .fontSize(14)
-              .fontColor('#666666')
-            Text('系统会自动弹出分享菜单')
-              .fontSize(14)
-              .fontColor('#666666')
-            Text('您可以选择分享到微信、QQ、邮箱等')
-              .fontSize(14)
-              .fontColor('#666666')
-          }
-          .width('100%')
-          .padding(16)
-          .backgroundColor('#FFFFFF')
-          .borderRadius(12)
-          .margin({ top: 20, bottom: 10 })
+                Blank()
 
-          // 显示备份成功信息
-          if (this.showBackupSuccess && this.backupFilePath) {
-            Column({ space: 8 }) {
-              Text('✅ 备份已生成')
-                .fontSize(16)
-                .fontColor('#34C759')
-                .fontWeight(FontWeight.Bold)
+                // 复制按钮
+                Button('一键复制')
+                  .fontSize(14)
+                  .height(32)
+                  .backgroundColor('#007AFF')
+                  .onClick(() => {
+                    this.copyToClipboard();
+                  })
+              }
+              .width('100%')
 
-              Text('如果未弹出分享菜单，请点击下方按钮重新分享')
+              // 使用 TextArea 替代 TextInput，支持多行自动换行 [^23^][^26^]
+              TextArea({ text: this.backupContent })
+                .width('100%')
+                .height(300)
                 .fontSize(14)
-                .fontColor('#666666')
-                .margin({ top: 4 })
+                .fontColor('#333333')
+                .backgroundColor('#F5F5F5')
+                .padding(12)
+                .borderRadius(8)
+                .enabled(true) // 允许交互选择文本
+                .copyOption(CopyOptions.LocalDevice) // 允许复制 [^13^]
 
-              Button('重新分享')
-                .fontSize(14)
-                .height(36)
-                .margin({ top: 8 })
-                .onClick(async () => {
-                  const backupContent = this.generateBackupContent();
-                  await this.shareFileDirectly(this.backupFilePath, backupContent);
-                })
+              Text('提示：点击"一键复制"可直接复制全部内容，或长按上方文本框手动选择复制')
+                .fontSize(12)
+                .fontColor('#999999')
+                .width('100%')
+                .textAlign(TextAlign.Center)
             }
             .width('100%')
             .padding(16)
-            .backgroundColor('#E8F5E9')
+            .backgroundColor('#E8F4FD')
             .borderRadius(12)
             .margin({ top: 10 })
+          }
+          // ===========================================================================
+
+          // 备份说明（仅在未生成备份时显示）
+          if (!this.showBackupResult) {
+            Column({ space: 8 }) {
+              Text('备份说明')
+                .fontSize(18)
+                .fontWeight(FontWeight.Bold)
+                .fontColor('#000000')
+                .margin({ bottom: 12 })
+
+              Text('点击下方按钮生成备份文本')
+                .fontSize(14)
+                .fontColor('#666666')
+              Text('生成后可直接复制或手动选择文本')
+                .fontSize(14)
+                .fontColor('#666666')
+            }
+            .width('100%')
+            .padding(16)
+            .backgroundColor('#FFFFFF')
+            .borderRadius(12)
+            .margin({ top: 20 })
           }
         }
         .width('100%')
@@ -670,19 +579,25 @@ struct DataBackupPage {
 
       // 底部备份按钮
       Column() {
-        Button('生成并分享备份')
+        Button(this.showBackupResult ? '重新生成备份' : '生成备份文本')
           .fontSize(18)
           .fontColor('#FFFFFF')
-          .backgroundColor(this.isGeneratingImage ? '#CCCCCC' : '#007AFF')
+          .backgroundColor(this.isGeneratingBackup ? '#CCCCCC' : '#007AFF')
           .width('90%')
           .height(50)
           .borderRadius(25)
-          .enabled(!this.isGeneratingImage)
+          .enabled(!this.isGeneratingBackup)
           .onClick(() => {
-            this.saveAndShareBackup();
+            if (this.showBackupResult) {
+              // 如果已经显示结果，点击则重新生成
+              this.generateAndShowBackup();
+            } else {
+              // 首次点击显示确认弹窗
+              this.showConfirmBackupDialog();
+            }
           })
 
-        if (this.isGeneratingImage) {
+        if (this.isGeneratingBackup) {
           LoadingProgress()
             .width(30)
             .height(30)
@@ -690,7 +605,7 @@ struct DataBackupPage {
             .margin({ top: 10 })
         }
 
-        Text('点击后请留意系统分享菜单')
+        Text(this.showBackupResult ? '已生成备份文本，请复制使用' : '点击生成可复制的备份文本')
           .fontSize(12)
           .fontColor('#999999')
           .margin({ top: 8 })

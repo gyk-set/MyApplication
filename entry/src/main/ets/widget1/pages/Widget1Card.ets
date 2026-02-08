@@ -1,76 +1,69 @@
-// 新增：导入鸿蒙路由模块
-import router from '@ohos.router';
-
 @Entry
 @Component
-struct WidgetCard {
+struct Widget1Card {
   /*
-   * 主标题：今日消费速览
+   * 主标题：快速记账
    */
-  readonly title: string = '今日消费速览';
+  readonly title: string = '快速记账'
   /*
-   * 副标题：点击查看详情
+   * 副标题：点击进入开始记账
    */
-  readonly subTitle: string = '点击查看详情';
+  readonly subTitle: string = '点击进入开始记账'
   /*
    * 跳转类型
    */
-  readonly actionType: string = 'router';
+  readonly actionType: string = 'router'
   /*
    * 入口Ability名称
    */
-  readonly abilityName: string = 'EntryAbility';
+  readonly abilityName: string = 'EntryAbility'
   /*
    * 跳转传递参数
    */
-  readonly message: string = 'to_mainPage';
+  readonly message: string = 'to_recordPage'
   /*
    * 宽高百分比
    */
-  readonly fullWidthPercent: string = '100%';
-  readonly fullHeightPercent: string = '100%';
+  readonly fullWidthPercent: string = '100%'
+  readonly fullHeightPercent: string = '100%'
 
   build() {
-    // 外层容器 - 用Stack堆叠布局实现背景图+文字层叠
+    // Stack堆叠布局：背景图 + 文字层叠
     Stack({ alignContent: Alignment.Center }) {
-      // 第一层：背景图（logo1）- 完全平铺，无间距
-      Image($r('app.media.card_bg_qingji'))
+      // 第一层：背景图
+      Image($r('app.media.card_bg_jizhang'))
         .width('100%')
         .height('100%')
         .objectFit(ImageFit.Fill) // 关键：强制填满卡片，无留白
         .opacity(1)
         .borderRadius(16) // 和外层卡片圆角一致，避免背景图边角溢出
 
-      // 第二层：原有文字内容（叠在背景图上方）
-      Column({ space: 10 }) { // 移除多余Row，减少层级，避免间距
+      // 第二层：文字内容
+      Column({ space: 6 }) {
         // 主标题
         Text(this.title)
-          .fontSize(22)
+          .fontSize(22) // 主标题更突出
           .fontWeight(FontWeight.Bold)
           .fontColor(Color.White)
           .textAlign(TextAlign.Center)
-
-        // 分隔线
-        Divider()
-          .width('100%')
-          .height(1)
-          .color('#EEEEEE')
+          .maxLines(1)
 
         // 副标题
         Text(this.subTitle)
-          .fontSize(18)
+          .fontSize(15) // ≈ 主标题 70%
           .fontWeight(FontWeight.Medium)
           .fontColor(Color.White)
           .textAlign(TextAlign.Center)
+          .maxLines(1)
       }
-      .width(this.fullWidthPercent)
+      .width('90%')
       .justifyContent(FlexAlign.Center)
       .alignItems(HorizontalAlign.Center)
     }
-    // 外层样式：移除padding，保证背景图无间距
+    // 外层容器
     .width(this.fullWidthPercent)
     .height(this.fullHeightPercent)
-    .backgroundColor($r('sys.color.comp_background_primary')) // 兜底背景色
+    .backgroundColor($r('sys.color.comp_background_primary') || '#FFFFFF')
     .borderRadius(16)
     .padding(0) // 核心：去掉内边距，背景图完全贴边
     .margin(0) // 清除外边距，避免卡片整体偏移

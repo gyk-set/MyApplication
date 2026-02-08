@@ -146,9 +146,9 @@
         "name": "EntryAbility",
         "srcEntry": "./ets/entryability/EntryAbility.ets",
         "description": "$string:EntryAbility_desc",
-        "icon": "$media:layered_image",
+        "icon": "$media:logo1",
         "label": "$string:EntryAbility_label",
-        "startWindowIcon": "$media:startIcon",
+        "startWindowIcon": "$media:logo1",
         "startWindowBackground": "$color:start_window_background",
         "exported": true,
         "skills": [
@@ -179,13 +179,13 @@
       {
         "name": "EntryFormAbility",
         "srcEntry": "./ets/entryformability/EntryFormAbility.ets",
-        "label": "$string:EntryFormAbility_label",
+        "label": "$string:EntryFormAbility_label",  // 卡片列表标题：“快捷记账卡片”
         "description": "$string:EntryFormAbility_desc",
         "type": "form",
         "metadata": [
           {
             "name": "ohos.extension.form",
-            "resource": "$profile:form_config"
+            "resource": "$profile:form_config"  // 必须指向正确的form_config
           }
         ]
       }

@@ -36,9 +36,9 @@ export struct CommonTabBar {
   // 当前选中的Tab索引（默认选中第一个）
   @State currentIndex: number = 0;
   // 选中态文字颜色
-  @Prop activeColor: string = '#007AFF';
+  @Prop activeColor: string = '#FF5722';
   // 未选中态文字颜色
-  @Prop inactiveColor: string = '#666666';
+  @Prop inactiveColor: string = '#999999';
   // 导航栏高度（默认56px）
   @Prop barHeight: number = 56;
 
@@ -49,15 +49,18 @@ export struct CommonTabBar {
       Image(this.currentIndex === index ? item.iconSelected : item.iconNormal)
         .width(24)
         .height(24)
-        .objectFit(ImageFit.Contain);
+        .objectFit(ImageFit.Contain)
+        .margin({ top: 2 }); // 轻微上边距，垂直居中;
 
       Text(item.title)
         .fontSize(12)
-        .fontColor(this.currentIndex === index ? '#007AFF' : '#666666');
+        .fontColor(this.currentIndex === index ? this.activeColor : this.inactiveColor)
+        .margin({ bottom: 2 });
     }
     .width('100%')
     .height('100%')
-    .justifyContent(FlexAlign.Center);
+    .justifyContent(FlexAlign.Center)
+    .alignItems(HorizontalAlign.Center);
   }
 
   build() {
@@ -68,7 +71,9 @@ export struct CommonTabBar {
           this.TabBarBuilder(item, index);
         }
         .width('33.33%')
-        .height(56)
+        .height(this.barHeight)
+        .justifyContent(FlexAlign.Center)
+        .alignItems(HorizontalAlign.Center)
         .onClick(() => {
           this.currentIndex = index;
           try {
@@ -82,16 +87,17 @@ export struct CommonTabBar {
       }, (item: TabItem, index: number) => index.toString());
     }
     .width('100%')
-    .height('5%')
+    .height(this.barHeight)
     .backgroundColor('#FFFFFF')
-    .padding({ top: 0, bottom: 0 })
     .justifyContent(FlexAlign.SpaceAround)
-    // 适配底部安全区：避免被全面屏小黑条遮挡
-    //.margin({ bottom: this.getSafeAreaBottom()})
-    // 底部导航栏上边框（增强分隔）
+    .alignItems(VerticalAlign.Center)
+    // 顶部细边框，区分内容区
     .border({
       width: { top: 0.5 }, // 按方向指定宽度
       color: { top: '#E5E5E5' } // 按方向指定颜色
     })
+    // 无多余内边距，避免挤压图标
+    .padding(0)
+    .margin(0);
   }
 }

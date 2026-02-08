@@ -144,20 +144,21 @@ export struct RecordPage {
     Column() {
       // 顶部标题栏
       CommonNavBar({
-
         options: {
           showBack: true,
-          onLeftClick: () =>{
+          onLeftClick: () => {
             router.replaceUrl({ url: 'pages/HomePage' })// 右侧按钮点击事件（可选）
           },
           title: '记账',
           rightText: '保存', // 右侧文本按钮内容（可选）
-          onRightClick: () =>{
+          onRightClick: () => {
             this.saveRecord()
             router.replaceUrl({ url: 'pages/HomePage' })// 右侧按钮点击事件（可选）
-          }}
+          }
+        }
       });
-      // 滚动内容区域
+
+      // 滚动内容区域（和我的页面保持一致：设置height('90%')）
       Scroll() {
         Column({ space: 24 }) {
           // 金额输入区域
@@ -877,21 +878,28 @@ export struct RecordPage {
           .backgroundColor('#FFFFFF')
           .borderRadius(12)
           .margin({ left: 20, right: 20 });
-
-          // 底部导航栏
-          CommonTabBar({
-            tabItems: this.tabItems,
-            activeColor: '#FF5722', // 自定义选中态颜色
-            inactiveColor: '#999999' // 自定义未选中态颜色
-          })
-            .width('100%')
-            .height(56)
-            .backgroundColor('#FFFFFF');
         }
         .width('100%')
-        .height('100%')
+        .height('100%') // 保留原有属性，不影响核心对齐
         .backgroundColor('#F2F2F7');
       }
+      .backgroundColor('#F2F2F7')
+      .width('100%')
+      .height('90%') // 关键修改：添加和我的页面一致的height('90%')
+      .scrollBar(BarState.Off); // 可选：和我的页面统一隐藏滚动条
+
+      // 底部导航栏（层级、属性和我的页面完全一致）
+      CommonTabBar({
+        tabItems: this.tabItems,
+        activeColor: '#FF5722', // 自定义选中态颜色
+        inactiveColor: '#999999' // 自定义未选中态颜色
+      })
+        .width('100%')
+        //.height(56)
+        .backgroundColor('#FFFFFF');
     }
+    .width('100%')
+    .height('100%')
+    .backgroundColor('#F2F2F7');
   }
 }

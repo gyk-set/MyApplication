@@ -4,15 +4,30 @@ import { TabItem, FeatureItems } from '../models/Record';
 import { CommonTabBar, DefaultTabItems } from '../components/CommonTabBar'
 import { CommonNavBar } from '../components/CommonNavBar'
 
+
+interface userProfile{
+  name: string,
+  bio: string,
+  avatar: string
+}
+
+
 @Entry
 @Component
 export struct MinePage {
   @State currentIndex: number = 2; // 我的页高亮
+
+  @StorageLink('userProfile') userProfile: userProfile = {
+    name: '轻记用户',
+    bio: '让记账更简单',
+    avatar: 'app.media.User_Avatar'
+  };
+
   private tabItems: Array<TabItem> = DefaultTabItems;
   private featureItems: Array<FeatureItems> = [
     {
       title: '数据备份',
-      desc: '本地数据备份与恢复',
+      desc: '本地数据备份',
       pageUrl: 'pages/DataBackupPage' // 新增：页面路由
     },
     {
@@ -45,7 +60,8 @@ export struct MinePage {
           // 个人信息卡
 
           Row() {
-            Image($r('app.media.User_Avatar'))
+            // 头像 - 使用存储中的值
+            Image($r(this.userProfile.avatar) || $r('app.media.User_Avatar'))
               .width(64)
               .height(64)
               .borderRadius(32) // 宽高的一半 = 圆形
@@ -54,14 +70,18 @@ export struct MinePage {
               .margin({ right: 16 });
 
             Column({ space: 6 }) {
-              Text('轻记用户')
+              // 用户名 - 使用存储中的值
+              Text(this.userProfile.name || '轻记用户')
                 .fontSize(18)
                 .fontWeight(FontWeight.Bold)
-                .fontColor('#000000');
-              Text('让记账更简单')
+                .fontColor('#000000')
+              Text(this.userProfile.bio || '让记账更简单')
                 .fontSize(14)
-                .fontColor('#666666');
+                .fontColor('#666666')
             }
+            .alignItems(HorizontalAlign.Start)  // Column左对齐
+            .layoutWeight(1)  // 给Column分配剩余空间
+
 
             Blank();
             Button('编辑资料')
@@ -145,8 +165,8 @@ export struct MinePage {
         inactiveColor: '#999999' // 自定义未选中态颜色
       })
         .width('100%')
-        .height(56)
-        .backgroundColor('#FFFFFF');
+        //.height(56)
+        .backgroundColor('#FFFFFF')
     }
     .width('100%')
     .height('100%')

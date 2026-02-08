@@ -4,6 +4,7 @@ import { RecordStore } from '../data/RecordStore';
 import { DateUtils } from '../utils/DateUtils';
 import { TabItem } from '../models/Record'
 import { CommonTabBar, DefaultTabItems } from '../components/CommonTabBar';
+import { CommonNavBar } from '../components/CommonNavBar';
 
 @Entry
 @Component
@@ -52,6 +53,7 @@ struct MainPage {
     this.expense = this.recordStore.getTodayExpense();
     this.income = this.recordStore.getTodayIncome();
     this.yesterdayChange = this.recordStore.getExpenseChangePercent();
+
   }
 
   // 新增：跳转按钮的点击事件处理函数
@@ -64,6 +66,15 @@ struct MainPage {
 
   build() {
     Column() {
+      // 1. 顶部导航栏（CommonNavBar）
+      CommonNavBar({
+
+        options: {
+          showBack: false,
+          title: '轻记，一款专注于记账的软件',
+
+        }
+      });
       // ========== 主内容区域 ==========
       Scroll() {
         Column({ space: 0 }) {
@@ -156,12 +167,6 @@ struct MainPage {
           })
           .margin({ left: '5%', right: '5%' }) // 使用margin代替alignSelf实现居中
 
-          // // 中间占位空间（让欢迎语在屏幕中间）
-          // Column()
-          //   .layoutWeight(1) // 占据剩余空间
-          //   .width('100%')
-          //   .justifyContent(FlexAlign.Center) // 垂直居中
-
           // 欢迎语
           Column() {
             Text('欢迎使用轻记，您的每一次记录都将是美好的')
@@ -232,10 +237,10 @@ struct MainPage {
               offsetX: 0,
               offsetY: 2
             })
-
             .onClick(() => {
               this.navigateToOtherPage();
             })
+
             // 下部分：提示信息
             Row() {
               Text('💡 小提示')
@@ -253,29 +258,29 @@ struct MainPage {
           .width('90%')
           .margin({ left: '5%', right: '5%', bottom: '10%' }) // 使用margin实现居中
 
-          // 底部占位空间（为TabBar留出空间）
-          Column()
-            .height(56) // TabBar高度
-            .width('100%')
+          // 移除：原底部56px的占位空间（导航栏不再需要内部占位）
         }
         .width('100%')
         .height('100%')
       }
+      // 关键修改1：将Scroll高度改为90%，和记账/我的页面完全一致
       .width('100%')
-      .height('95%')
+      .height('90%')
       .backgroundColor('#F5F5F5')
       .scrollBar(BarState.Off);
 
+      // 底部导航栏（属性和层级与其他页面完全对齐）
       CommonTabBar({
         tabItems: this.tabItems,
         activeColor: '#FF5722',
         inactiveColor: '#999999'
-      }).width('100%')
-        .height(56)
+      })
+        .width('100%')
+        //.height(56) // 固定56px高度，和其他页面一致
         .backgroundColor('#FFFFFF');
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#F5F5F5');
+    .backgroundColor('#F7F7F7');
   }
 }
